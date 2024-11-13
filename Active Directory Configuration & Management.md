@@ -80,40 +80,115 @@ In this section, we'll dive into installing and configuring Active Directory Dom
 
 Your AD DS role is now installed, but to fully set up AD, we need to configure this server as a domain controller. Let's continue to the next steps.
 
-### Step 3: Promoting the server to a Domain Controller (Post-Deployment)
+### Step 2: Promoting the server to a Domain Controller (Post-Deployment)
 
-1. Back in the Server Manager, notice a yellow **caution flag** icon at the top right corner. Click on it, and you'll see an option for **Promote this server to a domain controller**. Click this to start the AD configuration wizard.
+Back in the Server Manager, notice a yellow **caution flag** icon at the top right corner. Click on it, and you'll see an option for **Promote this server to a domain controller**. Click this to start the AD configuration wizard.
    <p align="center">
      <img src="https://github.com/Md-Jamiul-Haque/Active-Directory-Project/blob/main/Pictures/promoting-domain-controller.png" width="60%"/>
    </p>
-
-### Step 5: Create a New Forest and Set Up Domain Details
-
+   
 1. Under **Deployment Configuration**, select **Add a new forest**.
-2. Enter a name for your root domain (e.g., `MYDOMAIN.local` or anything you prefer).
-3. Click **Next** to proceed to the **Domain Controller Options**.
+2. Enter a name for your root domain (e.g., `MYDOMAIN.local` or anything you prefer). The domain name must have a top level domain.
+   <p align="center">
+     <img src="https://github.com/Md-Jamiul-Haque/Active-Directory-Project/blob/main/Pictures/add-new-forest.png" width="65%"/>
+   </p>
+4. Click **Next** to proceed to the **Domain Controller Options**.
+5. Here, leave at the default if unsure.
+6. Check the **Domain Name System (DNS) server** box if it's not already checked.
+7. In the **Directory Services Restore Mode (DSRM)** password field, set a password that you can easily remember.
+8. Click **Next** to continue, leaving the remaining options at their default settings.
+9. Click **Install** to finalize the AD setup. The server will automatically reboot once the process is complete.
+10. After rebooting, your VM's default local administrator account will now be part of the domain. Log in with your domain credentials, formatted as `MYDOMAIN\Administrator`.
+
+
+Your server is now a domain controller for your network, ready for managing users, devices, and security policies within your Active Directory domain. 
+> Let's move on to creating organizational units (OUs), adding users, and setting up group policies for centralized management.
+
+## Organizing Active Directory with OUs and User Accounts
+
+Now that Active Directory is set up, let’s organize it by creating two Organizational Units (OUs) and adding a user to each. This structure helps us manage departments, users, and group policies more efficiently. 
+
+### Creating Organizational Units (OUs)
+
+1. **Open Active Directory Users and Computers**:
+   - Navigate to **Server Manager** > **Tools** > **Active Directory Users and Computers**. This opens the AD management console.
+
+2. **Create the HR OU**:
+   - Right-click on your domain name (e.g., `MYDOMAIN.local`) in the left-hand panel.
+   - Select **New** > **Organizational Unit**.
+   <p align="center">
+     <img src="https://github.com/Md-Jamiul-Haque/Active-Directory-Project/blob/main/Pictures/OU.PNG" width="50%"/>
+   </p>
+   - Enter **HR** as the name for the OU.
+   - Ensure **Protect container from accidental deletion** is checked.
+   - Click **OK** to create the HR OU.
+   <p align="center">
+     <img src="https://github.com/Md-Jamiul-Haque/Active-Directory-Project/blob/main/Pictures/HR.PNG" width="40%"/>
+   </p>
+
+3. Create another OU by following the same steps.
+
+### Adding Users to OU
+
+1. **Add a User to the HR OU**:
+   - Right-click on the **HR** OU, select **New** > **User**.
+   - In the **New Object - User** wizard:
+     - Enter **First Name**: `First`
+     - **Last Name**: `Name`
+     - **User Logon Name**: `username`
+   - Click **Next**.
+   <p align="center">
+     <img src="https://github.com/Md-Jamiul-Haque/Active-Directory-Project/blob/main/Pictures/user.PNG" width="40%"/>
+   </p> 
+   - Enter and confirm a password for the user.
+   - Uncheck **User must change password at next logon** if you want to set a permanent password.
+   <p align="center">
+     <img src="https://github.com/Md-Jamiul-Haque/Active-Directory-Project/blob/main/Pictures/pass.PNG" width="40%"/>
+   </p> 
+   - Click **Next** and then **Finish** to create the user.
+
+
+By creating these OUs and users, you now have an organized structure in Active Directory, which will make managing permissions and policies easier as your domain grows.
 
 
 
-### Step 6: Set Domain Controller Options
+## Joining to the Domain as a user
 
-1. Here, you'll choose the **Forest and Domain Functional Level** (leave at the default if unsure).
-2. Check the **Domain Name System (DNS) server** box if it's not already checked.
-3. In the **Directory Services Restore Mode (DSRM)** password field, set a password that you can easily remember.
-4. Click **Next** to continue, leaving the remaining options at their default settings.
+With our Active Directory setup complete, let’s add the Windows 10 client machines to the domain. This step allows domain users to log into these machines with their AD credentials, enabling centralized control and management.
+
+1. On the Windows 10 machine, right-click **This PC** on the desktop and select **Properties**.
+2. In the **System** window, click on **Advanced system settings**.
+3. In the **System Properties** dialog box, select the **Computer Name** tab and click on **Change** (Before joining the domain, it’s good practice to give each machine a unique name)
+4. In the **Computer Name** field, enter a name (e.g., `WIN-HOST-1`) & Click **OK**
+5. You need to restart the computer before proceeding.
+<p align="center">
+     <img src="https://github.com/Md-Jamiul-Haque/Active-Directory-Project/blob/main/Pictures/host-name.PNG" width="30%"/>
+</p>   
+
+6. Go to **System Properties** window and `Computer Name` tab, click on **Change**.
+<p align="center">
+     <img src="https://github.com/Md-Jamiul-Haque/Active-Directory-Project/blob/main/Pictures/join-domain.PNG" width="30%"/>
+</p> 
+7. Select **Domain** under the **Member of** section.
+<p align="center">
+     <img src="https://github.com/Md-Jamiul-Haque/Active-Directory-Project/blob/main/Pictures/domain.PNG" width="30%"/>
+</p>
+8. Type your domain name (e.g., `MYDOMAIN.local`) and click **OK**.
+9. A dialog box will prompt you for a username and password with permission to join the domain.
+10. Enter the **Domain Administrator** credentials (e.g., `MYDOMAIN\Administrator`), then click **OK**.
+11. Once authentication is successful, you’ll see a welcome message to the domain.
+12. Click **OK** on the confirmation message.
+13. You’ll be prompted to restart the computer—go ahead and **Restart Now** to apply the changes.
 
 
+After restarting, you can log in as a domain user:
 
-### Step 7: Complete Installation and Reboot
+1. On the login screen, select **Other user**.
+2. Enter the domain user’s credentials in the format:  
+   `MYDOMAIN\username`  
+   Enter the `password` for this user.
+3. Click **Enter** to log in. The domain user is now authenticated and logged into the machine.
 
-1. Click **Install** to finalize the AD setup. The server will automatically reboot once the process is complete.
-2. After rebooting, your VM's default local administrator account will now be part of the domain. Log in with your domain credentials, formatted as `MYDOMAIN\Administrator`.
 
-
-Your server is now a domain controller for your network, ready for managing users, devices, and security policies within your Active Directory domain. With AD DS fully set up, you have established the backbone for network-wide management and security.
-
-> **Next Steps**: Let's move on to creating organizational units (OUs), adding users, and setting up group policies for centralized management.
-
----
-
+With these steps, you’ve successfully connected a Windows 10 machine to the domain. You can follow the same process for additional Windows 10 machines.
 
