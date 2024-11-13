@@ -2,15 +2,18 @@
 
 ## Introduction
 <div align="justify">
-Active Directory (AD) is a cornerstone of modern network administration, enabling centralized control over users, computers, and security within an organization. Developed by Microsoft, AD is more than just a user management tool; it's a comprehensive framework that integrates network services such as **user authentication**, **access control**, **policy enforcement**, and **directory services**. By leveraging AD, IT administrators can define who can access what resources, enforce security standards, and apply organizational policies—all from a single, central console.
 
-At its core, AD is organized around a **Domain Controller (DC)**, which is a server responsible for responding to security authentication requests within the AD network. The DC manages a database of users, groups, and devices and authenticates users’ access to resources within the domain. This makes it possible for network administrators to handle large numbers of users and devices with a high level of control.
+**Active Directory (AD)** is a foundational tool for centralized network management, created by Microsoft to streamline control over users, computers, and security within organizations. AD allows administrators to manage access, apply security policies, and maintain directory services from one central location.
 
-Some key components of Active Directory include:
+At the heart of AD is the **Domain Controller (DC)**, a server that authenticates user access and manages a database of users, groups, and devices. This enables efficient and secure handling of network resources across numerous users and devices.
 
-- **Domains**: Logical groupings of objects (users, computers, devices) that share the same AD database, managing network resources and security settings in a centralized way.
-- **Organizational Units (OUs)**: Sub-divisions within a domain designed to group similar users or devices, often by department or function, like IT or Security. OUs allow admins to apply specific policies and permissions to different groups.
-- **Group Policy Objects (GPOs)**: GPOs define configurations and policies for users and computers within the domain. From software installations to security settings, GPOs allow admins to set up centralized, automated rules that apply across the network.
+### Key AD Components:
+- **Domains**: Logical groups of users and devices that share a database, enabling centralized management of resources and security.
+- **Organizational Units (OUs)**: Subdivisions within a domain, often organized by department or function (e.g., IT, Security), where specific policies can be applied.
+- **Group Policy Objects (GPOs)**: Rules and configurations that admins set to manage software installations, security, and other settings across the network.
+
+With AD, IT teams can set policies, enforce security, and simplify user access—keeping network management efficient and consistent.
+
 
 In this guide, we’ll walk through the steps to set up a virtual AD environment in **VirtualBox** that replicates a small organizational network. Here’s our configuration:
 
@@ -73,9 +76,12 @@ In this section, we'll dive into installing and configuring Active Directory Dom
    <p align="center">
      <img src="https://github.com/Md-Jamiul-Haque/Active-Directory-Project/blob/main/Pictures/role-features.PNG" width="50%"/>
    </p>
-**Note:** Since I’m writing this article after completing the installation, the status is showing as (Installed).
-5. Check **Active Directory Domain Services** and click **Next**. A pop-up will prompt you to add additional features – click **Add Features**.
+**Note:** This article was created after the installation process was completed, which is why the status is shown as (Installed). Additionally, the following two screenshots were taken from a different environment, so the domain names does not match with the one in this setup.
+
+5. Check `Active Directory Domain Services` and click **Next**. A pop-up will prompt you to add additional features – click **Add Features**.
+
 6. Click **Next** to proceed, leaving all subsequent options at their default settings.
+   
 7. Click **Install** to begin installing Active Directory Domain Services. After installation close the wizard.
 
 Your AD DS role is now installed, but to fully set up AD, we need to configure this server as a domain controller. Let's continue to the next steps.
@@ -173,11 +179,17 @@ With our Active Directory setup complete, let’s add the Windows 10 client mach
 <p align="center">
      <img src="https://github.com/Md-Jamiul-Haque/Active-Directory-Project/blob/main/Pictures/domain.PNG" width="30%"/>
 </p>
+
 8. Type your domain name (e.g., `MYDOMAIN.local`) and click **OK**.
+
 9. A dialog box will prompt you for a username and password with permission to join the domain.
+
 10. Enter the **Domain Administrator** credentials (e.g., `MYDOMAIN\Administrator`), then click **OK**.
+ 
 11. Once authentication is successful, you’ll see a welcome message to the domain.
+
 12. Click **OK** on the confirmation message.
+ 
 13. You’ll be prompted to restart the computer—go ahead and **Restart Now** to apply the changes.
 
 
@@ -192,3 +204,105 @@ After restarting, you can log in as a domain user:
 
 With these steps, you’ve successfully connected a Windows 10 machine to the domain. You can follow the same process for additional Windows 10 machines.
 
+
+
+## Deploy Software Using Group Policy (GPO)
+
+In this section, we will use Group Policy to deploy software to computers and users. In this example, we will deploy Mozilla Firefox to computers via Group Policy. The steps in this example will work with other MSI files.
+
+### Create a Network Share for the MSI File
+
+1. Create a folder on any computer or server that everyone can access to the shared folder. For example, we’ll create a folder named `Software` on a domain controller. You can name your folders anything you want.
+2. Right-click on the folder, then select Properties.
+<p align="center">
+     <img src="https://github.com/Md-Jamiul-Haque/Active-Directory-Project/blob/main/Pictures/properties.PNG" width="30%"/>
+</p>
+
+3. Select the Sharing tab then click Advanced Sharing option.
+
+<p align="center">
+     <img src="https://github.com/Md-Jamiul-Haque/Active-Directory-Project/blob/main/Pictures/sharing.PNG" width="30%"/>
+</p>
+
+4. On the Advanced Sharing wizard, check the box to share this folder. The share name can be anything you want.
+
+<p align="center">
+     <img src="https://github.com/Md-Jamiul-Haque/Active-Directory-Project/blob/main/Pictures/advanced-sharing.PNG" width="30%"/>
+</p>  
+
+5. Now hit ok and click on the `Share` button then grant Read/Write permission for Everyone group and click Share.
+<p align="center">
+     <img src="https://github.com/Md-Jamiul-Haque/Active-Directory-Project/blob/main/Pictures/everyone.PNG" width="30%"/>
+</p>
+
+6. Now copy the MSI files to the shared folder you have just created.
+
+
+### Create GPO to to Deploy Software
+
+**Group Policy: Targeting Computers for Software Deployment**
+
+Group Policy provides a powerful way to manage and control both user and computer configurations across the domain. For deploying software, we’ll focus on targeting **computers**, ensuring the application installs at the system level. This means that anyone who logs onto a targeted computer will have the software readily available—no additional setup needed per user.
+
+> **Pro Tip**: Always create a **new Group Policy Object (GPO)** specifically for software installations. This keeps things organized and avoids cluttering the **Default Domain Policy** with specific settings.
+
+For example, we’ve created an OU for the computers of IT team. Then we’ll deploy the app into all computers of this OU. In this case I have only one computer in IT Computer OU.
+
+<p align="center">
+     <img src="https://github.com/Md-Jamiul-Haque/Active-Directory-Project/blob/main/Pictures/link.PNG" width="40%"/>
+</p>
+
+1. Open Group Policy Management console then navigate to the OU. Right click and select Create a GPO in this domain, and link it here.
+
+<p align="center">
+     <img src="https://github.com/Md-Jamiul-Haque/Active-Directory-Project/blob/main/Pictures/create-gpo.PNG" width="40%"/>
+</p>
+
+2. Give the GPO a descriptive name (eg. `Software-Deployment`), then right click on the newly created GPO to edit it.
+
+<p align="center">
+     <img src="https://github.com/Md-Jamiul-Haque/Active-Directory-Project/blob/main/Pictures/edit-gpo.PNG" width="40%"/>
+</p>
+
+3. Navigate to Computer `Configuration > Policies > Software Settings > Software installation` then right click New > Package… to add the MSI installation files from the network shared folder we’ve created in the previous steps.
+
+<p align="center">
+     <img src="https://github.com/Md-Jamiul-Haque/Active-Directory-Project/blob/main/Pictures/package.PNG" width="40%"/>
+</p>
+
+4. Browse to the network share using the UNC path. In my case it is `\\DC-01\Software`. Select the MSI you want to install, and click open.
+5. On the Deploy Software wizard, click `Assigned` and then click OK.
+
+<p align="center">
+     <img src="https://github.com/Md-Jamiul-Haque/Active-Directory-Project/blob/main/Pictures/assigned.PNG" width="40%"/>
+</p>
+
+6. With that, our GPO configuration is all set! The final settings should look like this.
+
+<p align="center">
+     <img src="https://github.com/Md-Jamiul-Haque/Active-Directory-Project/blob/main/Pictures/final-gpo.PNG" width="45%"/>
+</p>
+
+### Installing software using Group Policy
+
+The software installation will occur on the next reboot, but first, the computer needs to refresh its GPO settings. By default, GPO settings update every 90 minutes, but to apply the changes immediately, you can run the `gpupdate /force` command on the client machine.
+
+After running gpupdate, you may see a prompt indicating that some settings require a system restart or user logon to take effect. This message is referring to the software deployment via GPO, so go ahead and type `Y` to restart the computer and complete the installation.
+
+<p align="center">
+     <img src="https://github.com/Md-Jamiul-Haque/Active-Directory-Project/blob/main/Pictures/force-update.PNG" width="60%"/>
+</p>
+
+When users log in, they’ll see the app’s icon on the desktop, confirming that the software has successfully installed.
+
+<p align="center">
+     <img src="https://github.com/Md-Jamiul-Haque/Active-Directory-Project/blob/main/Pictures/firefox-installed.PNG" width="45%"/>
+</p>
+
+
+## Conclusion
+<div align="justify">
+In this guide, you've learned how to set up Active Directory in VirtualBox, including configuring a Domain Controller, creating Organizational Units (OUs), and applying Group Policy Objects (GPOs) for centralized software installation. This hands-on experience provides a solid foundation for managing and securing network resources efficiently.
+
+Active Directory is a key tool for IT administration, and mastering its basics helps ensure streamlined network management and security. With these steps, you’ve taken the first step toward becoming proficient in managing organizational networks.
+</div>
